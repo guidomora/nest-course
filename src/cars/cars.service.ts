@@ -1,27 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
 import { Car } from './interfaces/car.interfaces';
 import { v4 as uuid4 } from 'uuid';
-import { CreateCarDto } from './dto/create-car.dto';
+import { CreateCarDto, UpdateCarDto } from './dto';
+
 
 
 @Injectable()
 export class CarsService {
   private cars: Car[] = [
-    {
-      id: uuid4(),
-      brand: 'Toyota',
-      model: 'Corolla'
-    },
-    {
-      id: uuid4(),
-      brand: "Honda",
-      model: 'Civic'
-    },
-    {
-      id: uuid4(),
-      brand: 'Jeep',
-      model: 'Cherokee'
-    },
+    // {
+    //   id: uuid4(),
+    //   brand: 'Toyota',
+    //   model: 'Corolla'
+    // },
+    // {
+    //   id: uuid4(),
+    //   brand: "Honda",
+    //   model: 'Civic'
+    // },
+    // {
+    //   id: uuid4(),
+    //   brand: 'Jeep',
+    //   model: 'Cherokee'
+    // },
   ];
 
   findAll() {
@@ -45,5 +46,44 @@ export class CarsService {
     this.cars.push(car)
 
     return car
+  }
+
+  update(id:string, updateCarDto:UpdateCarDto){
+    let carDb = this.findOneById(id)
+
+    if (updateCarDto.id && carDb.id !== id)
+      throw new BadGatewayException('Car id is not valid inside body')
+
+    this.cars = this.cars.map(car => {
+      if (car.id === id) {
+        carDb = {
+          ...carDb,
+          ...updateCarDto,
+          id
+        }
+        return carDb
+      }
+      return car 
+    })
+
+    return carDb
+  }
+
+
+  delete(id:string){
+    let carDb = this.findOneById(id)
+
+    this.cars = this.cars.filter(car =>
+      car.id !== id
+    )
+
+    return {
+      message:'deleted success',
+      deletedCar: carDb
+    }
+  }
+
+  fillCarsWithSeedData(cars:Car[]){
+    this.cars = cars
   }
 }
